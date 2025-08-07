@@ -1,5 +1,5 @@
 import mongoose from 'mongoose'
-import {User} from '../models/user.models.js'
+import {User} from './user.models.js'
 
 
 const blogSchema=new mongoose.Schema({
@@ -20,7 +20,7 @@ const blogSchema=new mongoose.Schema({
     },
     author:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
+        ref:"{User}",
         required:true,
     },
     imageUrl:{

@@ -1,11 +1,11 @@
-import {Blog} from '../models/blog,models.js'
-import {Asynchandler} from '../utils/Asynchandler.js'
+import {Blog} from '../models/blog.models.js'
+import AsyncHandler from '../utils/Asynchandler.js'
 import {ApiError} from '../utils/Apierror.js'
 import slugify from 'slugify'
 import { User } from '../models/user.models.js'
 
 
-const createBlog=Asynchandler(async(req,res)=>{
+const createBlog=AsyncHandler(async(req,res)=>{
     const {title,content,author,tag,imageUrl}=req.body
     const slug=slugify(title,{lower:true});
     if(!title||!content){
@@ -25,7 +25,7 @@ const createBlog=Asynchandler(async(req,res)=>{
       res.status(201).json({ success: true, blog });
 });
 
-const getAllBlog=Asynchandler(async(req,res)=>{
+const getAllBlog=AsyncHandler(async(req,res)=>{
   const blog=  await Blog.find()
   .populate('author','name email')
   .sort({ createdAt: -1 });
@@ -34,6 +34,47 @@ const getAllBlog=Asynchandler(async(req,res)=>{
   }
      
 });
-const  getblogbySlug=Asynchandler(async(req,res)=>{
-    const {slug,title}=req.params.url
-})
+const  getblogbySlug=AsyncHandler(async(req,res)=>{
+          const blog= await Blog.findOne({slug:req.params.slug});
+          if(!blog){
+            throw new ApiError(404,"blog not found");
+          }
+
+          res.status(200)
+          .json( {
+            success:true,
+             blog
+          });
+});
+
+const updateBlog=AsyncHandler(async(req,res)=>{
+     const {title,content ,tags,imageUrl}=req.body;
+      const blog=await findByIdAndUpdate(req.params.id,
+        {title,content ,tags,imageUrl},{new:true,runValidators:true}
+    );
+});
+const deleteBlog=AsyncHandler(async(req,res)=>{
+  const blog =await findById(req.params.id);
+  if(! blog){
+    throw new ApiError(404,"blog not found");
+
+  }
+  if(blog.author.toString()!=req.user._id.toString()){
+    res.status(403);
+    throw new ApiError(404,"'Unauthorized: Not the author'");
+  }
+  res.status(2032)
+  .json({
+    success:true,
+    message:"blog deleted successfully"
+  })
+});
+export {
+  createBlog,
+  getAllBlog,
+  getblogbySlug,
+  updateBlog,
+  deleteBlog
+
+
+}
